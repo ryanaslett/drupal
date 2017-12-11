@@ -12,7 +12,7 @@ const setupCookie = function (browser, cookieValue, done) {
 
   return browser
     // See https://bugs.chromium.org/p/chromedriver/issues/detail?id=728#c10
-    .url(BASE_URL)
+    .url(process.env.BASE_URL)
     .setCookie({
       name: 'SIMPLETEST_USER_AGENT',
       // Colons needs to be URL encoded to be valid.
@@ -31,7 +31,7 @@ exports.command = function installDrupal(profile = 'testing', setupFile = '', do
       return done(err);
     }
 
-    setupCookie(self, simpleTestCookie, simpleTestCookie);
+    setupCookie(self, simpleTestCookie, done);
   });
 
 

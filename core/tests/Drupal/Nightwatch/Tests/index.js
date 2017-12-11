@@ -4,7 +4,7 @@ module.exports = {
       .installDrupal()
       .relativeURL('/user/login')
       .waitForElementVisible('body', 1000)
-      .assert.containsText('body', 'Powered by Drupal')
+      .assert.containsText('body', 'Skip to main content')
       .end();
   },
 };

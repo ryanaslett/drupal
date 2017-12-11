@@ -25,7 +25,7 @@ const setupCookie = function (browser, cookieValue, done) {
 exports.command = function installDrupal(profile = 'testing', setupFile = '', done) {
   const self = this;
 
-  exec(`php ./scripts/setup-drupal-test.php ${profile} ${setupFile}`, (err, simpleTestCookie) => {
+  exec(`php ./scripts/setup-drupal-test.php ${profile} --setup_file ${setupFile}`, (err, simpleTestCookie) => {
     if (err) {
       console.error(err);
       return done(err);

@@ -1,3 +1,5 @@
+const settings = require('../../../../nightwatch.settings.json');
+
 /**
  * Concatenate a BASE_URL variable and a pathname.
  *
@@ -9,10 +11,12 @@
  *   The 'browser' object.
  */
 exports.command = function relativeURL(pathname) {
-  if (!process.env.BASE_URL || process.env.BASE_URL === '') {
-    throw new Error('Missing a BASE_URL environment variable.');
+  if (
+    (!settings.BASE_URL || settings.BASE_URL === '') &&
+    (!process.env.SIMPLETEST_BASE_URL || process.env.SIMPLETEST_BASE_URL === '')) {
+    throw new Error('Missing a BASE_URL or SIMPLETEST_BASE_URL configuration item.');
   }
   this
-    .url(`${process.env.BASE_URL}${pathname}`);
+    .url(`${settings.BASE_URL !== '' ? settings.BASE_URL : process.env.SIMPLETEST_BASE_URL}${pathname}`);
   return this;
 };

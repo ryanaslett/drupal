@@ -1,0 +1,7 @@
+{
+  "BASE_URL": "",
+  "NIGHTWATCH_OUTPUT": "reports/nightwatch",
+  "NIGHTWATCH_HOSTNAME": "",
+  "HEADLESS_CHROME": true,
+  "CHROME_ARGS": []
+}

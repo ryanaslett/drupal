@@ -12,3 +12,6 @@ package-lock.json
 
 # Ignore test reports
 reports
+
+# Ignore local Nightwatch settings
+nightwatch.settings.json

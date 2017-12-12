@@ -99,11 +99,12 @@ class TestInstallationSetup {
     if (count($classes) > 1) {
       throw new \InvalidArgumentException(sprintf('You need to define a single class implementing \Drupal\Setup\TestSetupInterface'));
     }
+
+    require_once $setup_file;
+
     if (!is_subclass_of($classes[0], TestSetupInterface::class)) {
       throw new \InvalidArgumentException(sprintf('You need to define a class implementing \Drupal\Setup\TestSetupInterface'));
     }
-
-    require_once $setup_file;
 
     /** @var \Drupal\Setup\TestSetupInterface $instance */
     $instance = new $classes[0];

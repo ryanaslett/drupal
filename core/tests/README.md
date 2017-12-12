@@ -52,7 +52,8 @@ sudo -u www-data -E ./vendor/bin/phpunit -c core --testsuite functional-javascri
 - Install [Node.js](https://nodejs.org/en/download/) and [yarn](https://yarnpkg.com/en/docs/install). The versions required are specificed inside core/package.json in the `engines` field
 - Install [Google Chrome](https://www.google.com/chrome/browser/desktop/index.html)
 - Inside the `core` folder, run `yarn install`
-- Again inside the `core` folder, run `yarn nightwatch` to run the tests. By default this will output reports to `core/reports`
+- Configure the nightwatch settings by copying `nightwatch.settings.json.default` to `nightwatch.settings.json`
+- Again inside the `core` folder, run `yarn test:js` to run the tests. By default this will output reports to `core/reports`
 
 Some settings can be overridden with environment variables:
 

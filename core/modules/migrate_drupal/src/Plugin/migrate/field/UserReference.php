@@ -11,7 +11,7 @@ use Drupal\migrate\Plugin\MigrationInterface;
  *   type_map = {
  *     "userreference" = "entity_reference",
  *   },
- *   source_module = "user_reference",
+ *   source_module = "userreference",
  *   destination_module = "core",
  * )
  */
@@ -22,7 +22,7 @@ class UserReference extends FieldPluginBase {
    */
   public function processFieldValues(MigrationInterface $migration, $field_name, $data) {
     $process = [
-      'plugin' => 'iterator',
+      'plugin' => 'sub_process',
       'source' => $field_name,
       'process' => [
         'target_id' => [

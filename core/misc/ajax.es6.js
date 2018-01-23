@@ -40,11 +40,7 @@
       }
 
       // Load all Ajax behaviors specified in the settings.
-      for (const base in settings.ajax) {
-        if (settings.ajax.hasOwnProperty(base)) {
-          loadAjaxBehavior(base);
-        }
-      }
+      Object.keys(settings.ajax || {}).forEach(base => loadAjaxBehavior(base));
 
       Drupal.ajax.bindAjaxLinks(document.body);
 
@@ -388,7 +384,7 @@
     this.element = element;
 
     /**
-     * @deprecated in Drupal 8.0.0 and will be removed before Drupal 9.0.0.
+     * @deprecated in Drupal 8.5.0 and will be removed before Drupal 9.0.0.
      * Use elementSettings.
      *
      * @type {Drupal.Ajax~elementSettings}
@@ -877,14 +873,14 @@
     // Track if any command is altering the focus so we can avoid changing the
     // focus set by the Ajax command.
     let focusChanged = false;
-    for (const i in response) {
-      if (response.hasOwnProperty(i) && response[i].command && this.commands[response[i].command]) {
+    Object.keys(response || {}).forEach((i) => {
+      if (response[i].command && this.commands[response[i].command]) {
         this.commands[response[i].command](this, response[i], status);
         if (response[i].command === 'invoke' && response[i].method === 'focus') {
           focusChanged = true;
         }
       }
-    }
+    });
 
     // If the focus hasn't be changed by the ajax commands, try to refocus the
     // triggering element or one of its parents if that element does not exist

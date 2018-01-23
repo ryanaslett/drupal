@@ -22,10 +22,10 @@ const setupCookie = function (browser, cookieValue, done) {
     }, done);
 };
 
-exports.command = function installDrupal(profile = 'testing', setupFile = '', done) {
+exports.command = function installDrupal(setupClass = '', done) {
   const self = this;
 
-  exec(`php ./scripts/setup-drupal-test.php ${profile} --setup_file ${setupFile}`, (err, simpleTestCookie) => {
+  exec(`php ./scripts/setup-drupal-test.php setup-drupal-test --setup_class ${setupClass} --base_url ${process.env.BASE_URL}`, (err, simpleTestCookie) => {
     if (err) {
       console.error(err);
       return done(err);

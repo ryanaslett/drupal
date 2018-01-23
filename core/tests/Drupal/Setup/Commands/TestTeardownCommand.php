@@ -12,11 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * Symfony console command to setup Drupal.
+ * Tears down a test Drupal.
  *
  * @internal
  */
-class TestInstallationSetupCommand extends Command {
+class TestTeardownCommand extends Command {
 
   /**
    * The used PHP autoloader.
@@ -44,8 +44,8 @@ class TestInstallationSetupCommand extends Command {
    * {@inheritdoc}
    */
   protected function configure() {
-    $this->setName('setup-drupal-test')
-      ->addOption('setup_class', NULL, InputOption::VALUE_OPTIONAL)
+    $this->setName('teardown-drupal-test')
+      ->addArgument('db_prefix')
       ->addOption('db_url', NULL, InputOption::VALUE_OPTIONAL, 'URL for database or SIMPLETEST_DB', getenv('SIMPLETEST_DB'))
       ->addOption('base_url', NULL, InputOption::VALUE_OPTIONAL, 'Base URL for site under test or SIMPLETEST_BASE_URL', getenv('SIMPLETEST_BASE_URL'));
   }
@@ -55,21 +55,22 @@ class TestInstallationSetupCommand extends Command {
    */
   protected function execute(InputInterface $input, OutputInterface $output) {
     $db_url = $input->getOption('db_url');
+    $db_prefix = $input->getArgument('db_prefix');
     $base_url = $input->getOption('base_url');
     putenv("SIMPLETEST_DB=$db_url");
     putenv("SIMPLETEST_BASE_URL=$base_url");
 
-    $this->bootstrapDrupal();
+    $this->bootstrapDrupal($db_prefix);
 
     // Manage site fixture.
     $test = new TestInstallationSetup();
-    $test->setup('testing', $input->getOption('setup_class'));
-
-    $output->writeln(drupal_generate_test_ua($test->getDatabasePrefix()));
+    $test->teardown($db_prefix);
   }
 
-  protected function bootstrapDrupal() {
+  protected function bootstrapDrupal($db_prefix) {
     $request = Request::createFromGlobals();
+    $_COOKIE['SIMPLETEST_USER_AGENT'] = drupal_generate_test_ua($db_prefix);
+
     $kernel = DrupalKernel::createFromRequest($request, $this->autoloader, $this->getApplication()->getName());
     DrupalKernel::bootEnvironment($kernel->getAppRoot());
 

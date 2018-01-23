@@ -4,6 +4,7 @@ namespace Drupal\Setup;
 
 use Drupal\Core\Database\Database;
 use Drupal\Core\Test\FunctionalTestSetupTrait;
+use Drupal\Core\Test\TestDatabase;
 use Drupal\Core\Test\TestSetupTrait;
 use Drupal\Tests\RandomGeneratorTrait;
 use Drupal\Tests\SessionTestTrait;
@@ -46,19 +47,56 @@ class TestInstallationSetup {
    *
    * @param string $profile
    *   (optional) The installation profile to use.
-   * @param string $setup_file
-   *   (optional) Setup file. A PHP file to setup configuration used by the
+   * @param string $setup_class
+   *   (optional) Setup class. A PHP class to setup configuration used by the
    *   test.
    */
-  public function setup($profile = 'testing', $setup_file = NULL) {
+  public function setup($profile = 'testing', $setup_class = NULL) {
     $this->profile = $profile;
     $this->setupBaseUrl();
     $this->prepareEnvironment();
     $this->installDrupal();
 
-    if ($setup_file) {
-      $this->executeSetupFile($setup_file);
+    if ($setup_class) {
+      $this->executeSetupClass($setup_class);
     }
+  }
+
+  /**
+   * Removes a given instance by deleting all the database tables.
+   *
+   * @param string $db_prefix
+   *   The used database prefix.
+   */
+  public function teardown($db_prefix) {
+    $tables = Database::getConnection()->schema()->findTables('%');
+    foreach ($tables as $table) {
+      if (Database::getConnection()->schema()->dropTable($table)) {
+        unset($tables[$table]);
+      }
+    }
+
+    // Delete test site directory.
+    $test_database = new TestDatabase($db_prefix);
+    file_unmanaged_delete_recursive($test_database->getTestSitePath(), [$this, 'filePreDeleteCallback']);
+  }
+
+  /**
+   * Ensures test files are deletable within file_unmanaged_delete_recursive().
+   *
+   * Some tests chmod generated files to be read only. During
+   * BrowserTestBase::cleanupEnvironment() and other cleanup operations,
+   * these files need to get deleted too.
+   *
+   * @param string $path
+   *   The file path.
+   */
+  public static function filePreDeleteCallback($path) {
+    // When the webserver runs with the same system user as phpunit, we can
+    // make read-only files writable again. If not, chmod will fail while the
+    // file deletion still works if file permissions have been configured
+    // correctly. Thus, we ignore any problems while running chmod.
+    @chmod($path, 0700);
   }
 
   /**
@@ -87,67 +125,25 @@ class TestInstallationSetup {
   /**
    * Uses the setup file to configure Drupal.
    *
-   * @param string $setup_file
-   *   The setup file.
+   * @param string $class
+   *   The full qualified class name, which should setup Drupal for tests. One common need for
+   *   example would be to create the required content types and fields.
+   *   The class needs to implement \Drupal\Setup\TestSetupInterface
+   *
+   * @see \Drupal\Setup\TestSetupInterface
    */
-  protected function executeSetupFile($setup_file) {
-    $classes = static::fileGetPhpClasses($setup_file);
-
-    if (empty($classes)) {
-      throw new \InvalidArgumentException(sprintf('You need to define a class implementing \Drupal\Setup\TestSetupInterface'));
-    }
-    if (count($classes) > 1) {
-      throw new \InvalidArgumentException(sprintf('You need to define a single class implementing \Drupal\Setup\TestSetupInterface'));
+  protected function executeSetupClass($class) {
+    if (!class_exists($class)) {
+      throw new \InvalidArgumentException("There was a problem loading {$class}");
     }
 
-    require_once $setup_file;
-
-    if (!is_subclass_of($classes[0], TestSetupInterface::class)) {
+    if (!is_subclass_of($class, TestSetupInterface::class)) {
       throw new \InvalidArgumentException(sprintf('You need to define a class implementing \Drupal\Setup\TestSetupInterface'));
     }
 
     /** @var \Drupal\Setup\TestSetupInterface $instance */
-    $instance = new $classes[0];
+    $instance = new $class;
     $instance->setup();
-  }
-
-  /**
-   * Gets the PHP classes contained in a php file.
-   *
-   * @param string $filepath
-   *   The file path.
-   *
-   * @return string[]
-   *   An array of PHP classes.
-   */
-  protected static function fileGetPhpClasses($filepath) {
-    $php_code = file_get_contents($filepath);
-    $classes = static::extractClassesFromPhp($php_code);
-    return $classes;
-  }
-
-  /**
-   * @param string $php_code
-   *   PHP code to parse.
-   *
-   * @return string[]
-   *   An array of PHP classes.
-   */
-  protected static function extractClassesFromPhp($php_code) {
-    $classes = array();
-    $tokens = token_get_all($php_code);
-    $count = count($tokens);
-    for ($i = 2; $i < $count; $i++) {
-      if ($tokens[$i - 2][0] == T_CLASS
-        && $tokens[$i - 1][0] == T_WHITESPACE
-        && $tokens[$i][0] == T_STRING
-      ) {
-
-        $class_name = $tokens[$i][1];
-        $classes[] = $class_name;
-      }
-    }
-    return $classes;
   }
 
   /**

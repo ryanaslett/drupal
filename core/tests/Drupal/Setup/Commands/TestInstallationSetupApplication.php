@@ -13,17 +13,21 @@ use Symfony\Component\Console\Input\InputInterface;
 class TestInstallationSetupApplication extends Application {
 
   /**
-   * SetupDrupalApplication constructor.
+   * The used PHP autoloader.
+   *
+   * @var object
    */
-  public function __construct() {
-    parent::__construct('setup-drupal-test', '1.0.0');
-  }
+  protected $autoloader;
 
   /**
-   * {@inheritdoc}
+   * SetupDrupalApplication constructor.
+   *
+   * @param string $autoloader
+   *   The used PHP autoloader.
    */
-  protected function getCommandName(InputInterface $input) {
-    return 'setup-drupal-test';
+  public function __construct($autoloader) {
+    $this->autoloader = $autoloader;
+    parent::__construct('setup-drupal-test', '0.0.1');
   }
 
   /**
@@ -32,7 +36,8 @@ class TestInstallationSetupApplication extends Application {
   protected function getDefaultCommands() {
     // Even though this is a single command, keep the HelpCommand (--help).
     $default_commands = parent::getDefaultCommands();
-    $default_commands[] = new TestInstallationSetupCommand();
+    $default_commands[] = new TestInstallationSetupCommand($this->autoloader);
+    $default_commands[] = new TestTeardownCommand($this->autoloader);
     return $default_commands;
   }
 

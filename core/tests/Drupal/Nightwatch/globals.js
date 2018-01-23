@@ -11,6 +11,11 @@ module.exports = {
     }
 
     process.env.BASE_URL = process.env.SIMPLETEST_BASE_URL = baseUrl;
+
+    // Note: The simpletest DB is optional, when there is a local drupal
+    // installation.
+    process.env.SIMPLETEST_DB = settings.DB_URL || process.env.SIMPLETEST_DB;
+
     if (process.env.NODE_ENV !== 'testbot') {
       chromedriver.start();
     }

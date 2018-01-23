@@ -25,7 +25,12 @@ const setupCookie = function (browser, cookieValue, done) {
 exports.command = function installDrupal(setupClass = '', done) {
   const self = this;
 
-  exec(`php ./scripts/setup-drupal-test.php setup-drupal-test --setup_class ${setupClass} --base_url ${process.env.BASE_URL}`, (err, simpleTestCookie) => {
+  let dbOption = '';
+  if (process.env.SIMPLETEST_DB && process.env.SIMPLETEST_DB !== undefined && process.env.SIMPLETEST_DB.length > 0) {
+    dbOption = `--db_url ${process.env.SIMPLETEST_DB}`;
+  }
+
+  exec(`php ./scripts/setup-drupal-test.php setup-drupal-test --setup_class ${setupClass} --base_url ${process.env.BASE_URL} ${dbOption}`, (err, simpleTestCookie) => {
     if (err) {
       console.error(err);
       return done(err);
